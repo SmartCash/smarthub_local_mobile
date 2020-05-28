@@ -1,3 +1,4 @@
+import './shim'
 import * as React from 'react';
 
 import useCachedResources from './hooks/useCachedResources';
