@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet,
   View,
   Button, 
-  Platform, 
-  StatusBar,
+  Linking,
   Text,
   TouchableHighlight,
+  TouchableOpacity,
   TextInput } from 'react-native';
 
 import Modal from "../contentComponents/Modal";
@@ -73,6 +73,25 @@ import { isAddress,
     return isValid;
   }
 
+  function Balance(){
+    return(
+      <View style={styles.balance}>
+
+        <View style={styles.button}>
+          <Text style={styles.textBalance}>Your Balance:{balance}</Text>
+        </View>
+
+        <View style={styles.button}>
+          <TouchableOpacity 
+              onPress={ ()=> Linking.openURL(`https://insight.smartcash.cc/address/${address}`)}>
+            <Text style={styles.text}>Show Transactions</Text>
+          </TouchableOpacity>
+        </View>
+
+    </View>
+
+    );
+  }
 
   return(
     <View style={styles.container}>
@@ -95,7 +114,7 @@ import { isAddress,
           </View>
 
           <TextInput style={styles.input}
-/*          onChangeText={text => setValue('address', text, true)}
+          onChangeText={text => setValue('address', text, true)}
             title="text"
             autoComplete="off"
             ref={register({
@@ -103,13 +122,15 @@ import { isAddress,
               validate: AddressPKValidation,
             })}
             onInput={() => triggerValidation("addressTo")}
- */
+ 
           placeholder="_________________________________________________">
           </TextInput>
 
           <Text>put address invalid</Text>
-
+          
         </View>
+
+        <Balance/>
         
         <Forme/>
       
@@ -135,7 +156,7 @@ const styles = StyleSheet.create({
     marginTop:'2%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },  
+  },
   qr: {
     backgroundColor: '#fff',
     marginRight:10
@@ -161,14 +182,27 @@ const styles = StyleSheet.create({
     width:325,
   },
   text:{
-    marginLeft: 12,
-    marginRight: 200,
-    shadowColor: 'black',
     shadowOffset: { width: -1, height: 2},
     shadowOpacity: 0.26,
     shadowRadius: 5,
-    backgroundColor:'#fff',
-    padding:10,
+    padding:5,
+    backgroundColor:'#f1f1f1'
   },
+  textBalance:{
+    shadowRadius: 5,
+    padding:5,
+    backgroundColor:'#fff'
+  },
+  button:{
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  balance:{
+    flexDirection: 'row',
+    justifyContent:'space-between',
+    flex:1,
+    marginTop:-15,
+    marginBottom:-10
+  },  
 });
 export default Send;
