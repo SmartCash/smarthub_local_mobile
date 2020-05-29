@@ -1,4 +1,0 @@
-
-<SendForm address={address} balance={balance} privateKey={privateKey}/>
-
-line 109 send.js
