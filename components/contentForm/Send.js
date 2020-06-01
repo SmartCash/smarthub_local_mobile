@@ -123,7 +123,7 @@ import { isAddress,
             })}
             onInput={() => triggerValidation("addressTo")}
  
-          placeholder="_________________________________________________">
+            placeholder="_________________________________________________">
           </TextInput>
 
           {errors.address && (
@@ -131,8 +131,8 @@ import { isAddress,
           )}
           
         </View>
-
-          {formState.isValid ?<Balance/> && <Forme address={address} balance={balance} privateKey={privateKey}/>: null}
+        
+          {!AddressPKValidation.apply(isAddress) ? <Forme address={address} balance={balance} privateKey={privateKey}/>: null}
       
       </View>
  
