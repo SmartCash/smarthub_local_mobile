@@ -191,19 +191,27 @@ import { StyleSheet,
                     });
                   return isValid;
                 },
+                
               })}
               placeholder="________________________________________________">
+              
           </TextInput>
         
             {errors.privateKey && (
-              <Text> className="error-message">{errors.privateKey.message}</Text>
+              <Text className="error-message">{errors.privateKey.message}</Text>
             )}
 
           </View>
       
         ) : null}  
 
+        <View>
+          <TouchableHighlight onPress={()=>{}}>
+            <Button title="Send" disabled={loading || !formState.isValid}></Button>
+          </TouchableHighlight>
         </View>
+
+      </View>
     );
   }
   
