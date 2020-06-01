@@ -11,10 +11,10 @@ import { StyleSheet,
 import Modal from "../contentComponents/Modal";
 
 import { isAddress,
-  isPK,getBalance,
+  isPK,
+  getBalance,
   getAddress,
   createNewWalletKeyPair } from '../../lib/sapi';
-  import useModal from "../../util/useModal";
   import { useForm } from "react-hook-form";
 
   import Forme from '../contentForm/Form';
@@ -23,7 +23,6 @@ import { isAddress,
   
   var isAddressTrue = isAddress(`SMk5FaYYxKdwrTDThWhBN6oAq5jS72Bb7e`).then(data => data);
 
-  const { isShowing, toggle } = useModal(false);
   const [address, setAddress] = useState();
   const [privateKey, setPrivateKey] = useState();
   const [balance, setBalance] = useState(false);
@@ -114,29 +113,30 @@ import { isAddress,
           </View>
 
           <TextInput style={styles.input}
-          onChangeText={text => setValue('address', text, true)}
+            onChangeText={text => setValue('address', text)}
             title="text"
             autoComplete="off"
             ref={register({
               required: true,
               validate: AddressPKValidation,
+              
             })}
             onInput={() => triggerValidation("addressTo")}
  
           placeholder="_________________________________________________">
           </TextInput>
 
-          <Text>put address invalid</Text>
+          {errors.address && (
+            <Text className="error-message">{errors.address.message}</Text> 
+          )}
           
         </View>
 
-        <Balance/>
-        
-        <Forme/>
+          {formState.isValid ?<Balance/> && <Forme address={address} balance={balance} privateKey={privateKey}/>: null}
       
       </View>
-      
-    
+ 
+
     </View>
   );
 }
@@ -205,4 +205,5 @@ const styles = StyleSheet.create({
     marginBottom:-10
   },  
 });
+
 export default Send;

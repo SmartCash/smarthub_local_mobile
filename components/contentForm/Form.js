@@ -14,9 +14,24 @@ import { StyleSheet,
   import useModal from "../../util/useModal";
   import { useForm } from "react-hook-form";
 
-  function Form({ balance, privateKey }){
-    const { register, setValue, handleSubmit, errors } = useForm();
-    const onSubmit = data => Alert.alert('Form Data', data);
+  function Form({ address, balance, privateKey, withdraw }){
+    const { isShowing, toggle } = useModal(false);
+    const [txid, setTxId] = useState();
+    const [fee, setFee] = useState();
+    const [loading, setLoading] = useState(false);
+    const [type, setType] = useState();
+    const {
+      register,
+      handleSubmit,
+      errors,
+      setError,
+      setValue,
+      formState,
+      triggerValidation,
+      getValues,
+    } = useForm({ mode: "onChange", defaultValues: {
+        amount: withdraw ? Number(balance - 0.002).toFixed(4) : null
+      } });
 
     React.useEffect(() => { 
       register({ name: 'address'}, { required: true });
@@ -25,6 +40,26 @@ import { StyleSheet,
       
     }, [register]);
     
+    const onSubmit = (data) => {
+      setLoading(true);
+      createAndSendRawTransaction(
+        data?.addressTo,
+        Number(data?.amount),
+        String(privateKey || data?.privateKey)
+      )
+        .then((data) => setTxId(data?.txid))
+        .catch((error) => setError(error[0]?.message))
+        .finally(() => setLoading(false));
+    };
+  
+    const getFeeFromSAPI = (amount) => {
+      getFee(Number(amount), address).then((fee) => {
+        setFee(fee);
+        if (fee && Number(getValues("amount")) + fee > balance) {
+          setError("amount", "invalid", "Requested amount exceeds balance");
+        }
+      });
+    };
       return(
       <View style={styles.container}>
 
@@ -45,7 +80,7 @@ import { StyleSheet,
 
           <TextInput 
             style={styles.text}
-            onChangeText={text => setValue('address', text, true)}
+            onChangeText={text => setValue('addressTo', text, true)}
             ref={register({
               required: true,
               validate: async (value) => {
@@ -112,53 +147,63 @@ import { StyleSheet,
               placeholder="__________">
             </TextInput>
           </View>
+          {fee && (
           <View style={styles.text}>
-            <Text>Fee: put variable fee </Text> 
-            <Text>Amount with fee: put Number getValues "amount" </Text>
+            <Text>Fee: {fee} </Text> 
+            <Text>Amount with fee: {Number(getValues("amount"))+ fee }</Text>
           </View>
-        
+          )}
+          
         </View>
         
         {errors.amount && (
           <Text className="error-message">{errors.amount.message}</Text>
         )}
+
+        {!privateKey ?(
+        //card private Key
+          <View style={styles.card}>
+
+            <View style={styles.address}>
+              <Text>Your private Key</Text>
+              <TouchableHighlight
+                onPress={() => {
+                  this.setModalVisible(!modalVisible);
+                }}
+                >
+                <View style={styles.qr}>
+                  <Modal/>
+                </View>                
+              </TouchableHighlight>
+            </View>
+          
+            <TextInput 
+              style={styles.text}
+              onChangeText={text => setValue('privateKey', text, true)}
+              ref={register({
+                required: true,
+                validate: async (value) => {
+                  let isValid = false;
+                  await isPK(value)
+                    .then((data) => (isValid = true))
+                    .catch((error) => {
+                      setError("privateKey", "invalid", "Invalid Private Key");
+                    });
+                  return isValid;
+                },
+              })}
+              placeholder="________________________________________________">
+          </TextInput>
         
-        <View style={styles.card}>
+            {errors.privateKey && (
+              <Text> className="error-message">{errors.privateKey.message}</Text>
+            )}
 
-          <View style={styles.address}>
-            <Text>Your private Key</Text>
-            <TouchableHighlight
-              onPress={() => {
-                this.setModalVisible(!modalVisible);
-              }}
-              >
-              <View style={styles.qr}>
-                <Modal/>
-              </View>                
-            </TouchableHighlight>
           </View>
-         
-          <TextInput 
-          style={styles.text}
-          onChangeText={text => setValue('privateKey', text, true)}
-          ref={register({
-            required: true,
-            validate: async (value) => {
-              let isValid = false;
-              await isPK(value)
-                .then((data) => (isValid = true))
-                .catch((error) => {
-                  setError("privateKey", "invalid", "Invalid Private Key");
-                });
-              return isValid;
-            },
-          })}
-          placeholder="________________________________________________">
-        </TextInput>
-       
-        </View>
+      
+        ) : null}  
 
-      </View>
+        </View>
     );
   }
   
