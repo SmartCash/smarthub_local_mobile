@@ -21,11 +21,13 @@ import { isAddress,
 
  function Send() {
   
-  var isAddressTrue = isAddress(`SMk5FaYYxKdwrTDThWhBN6oAq5jS72Bb7e`).then(data => data);
+  //address return true on input
+  //needed to validate balance and privateKey
+  //formsState return always true in object
 
-  const [address, setAddress] = useState();
-  const [privateKey, setPrivateKey] = useState();
-  const [balance, setBalance] = useState(false);
+  const [address, setAddress] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
+  const [balance, setBalance] = useState();
   const {
     register,
     errors,
@@ -90,8 +92,10 @@ import { isAddress,
     </View>
 
     );
-  }
-
+  } 
+  console.log(balance);
+  console.log(address);
+ 
   return(
     <View style={styles.container}>
 
@@ -113,8 +117,8 @@ import { isAddress,
           </View>
 
           <TextInput style={styles.input}
-            onChangeText={text => setValue('address', text)}
-            title="text"
+            value={address}
+            onChangeText={text => setAddress(text)}
             autoComplete="off"
             ref={register({
               required: true,
@@ -131,9 +135,9 @@ import { isAddress,
           )}
           
         </View>
-        
-          {!AddressPKValidation.apply(isAddress) ? <Forme address={address} balance={balance} privateKey={privateKey}/>: null}
-      
+          
+         {formState.isValid ? (<Balance/>) : null}
+
       </View>
  
 
