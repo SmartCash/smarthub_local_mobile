@@ -28,49 +28,50 @@ import { isAddress,
   const [address, setAddress] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [balance, setBalance] = useState();
-  const {
-    register,
+  const {register,
     errors,
     setError,
     setValue,
     formState,
-    triggerValidation,
-  } = useForm({
-    mode: "onChange",
-  });
+    triggerValidation,} = useForm({mode: "onChange",})
+
+  const [isValid, setIsValid] = useState(false);
 
   const getBalanceFromSAPI = (address) => {
     setBalance("Loading Balance");
     getBalance(address)
       .then((res) => setBalance(res.balance))
-      .catch((error) => setBalance("Error loading balance"));
+      .catch((error) => setBalance("Error"));
+      
   }
 
   const AddressPKValidation = async (value) => {
+    setIsValid(false);
     let isValid = false;
-
-    await isAddress(value)
+    const valueRight = value.nativeEvent.text;
+    
+    await isAddress(valueRight)
       .then(data => {
         setAddress(data);
         getBalanceFromSAPI(data);
         isValid = true;
+        setIsValid(true);
       })
       .catch(data => data);
 
-    await isPK(value)
+    await isPK(valueRight)
       .then(() => {
-        const address = getAddress(value);
+        const address = getAddress(valueRight);
         setAddress(address);
-        setPrivateKey(value);
+        setPrivateKey(valueRight);
         getBalanceFromSAPI(address);
         isValid = true;
       })
       .catch(data => data);
-
-    if (!isValid) {
+      
+    if (isValid === false) {
       setError("address", "invalid", "Invalid Address");
     }
-
     return isValid;
   }
 
@@ -93,9 +94,20 @@ import { isAddress,
 
     );
   } 
-  console.log(balance);
-  console.log(address);
- 
+
+  function Error(){
+    return(
+      <View>
+        {errors.address && (
+          <Text className="error-message">{errors.address.message}</Text> 
+        )}
+      </View>
+    );
+  }
+
+
+  console.log(formState)
+
   return(
     <View style={styles.container}>
 
@@ -123,28 +135,24 @@ import { isAddress,
             ref={register({
               required: true,
               validate: AddressPKValidation,
-              
             })}
-            onInput={() => triggerValidation("addressTo")}
+            //onInput={() => triggerValidation("addressTo")}
+            onChange={AddressPKValidation}  
  
             placeholder="_________________________________________________">
           </TextInput>
 
-          {errors.address && (
-            <Text className="error-message">{errors.address.message}</Text> 
-          )}
-          
         </View>
-          
-         {formState.isValid ? (<Balance/>) : null}
+
+          {isValid ? <Balance/> : <Error/> }
+
+          {isValid ? <Forme/> : null}
 
       </View>
- 
-
+            
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
