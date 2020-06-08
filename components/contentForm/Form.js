@@ -33,13 +33,26 @@ import { StyleSheet,
         amount: withdraw ? Number(balance - 0.002).toFixed(4) : null
       } });
 
+  const [amount, setAmount] = useState();
+
+  function ErrorAddress (){
+    return(
+      <View>
+        {errors.address && (
+          <Text className="error-message" style={styles.msgError}>{errors.address.message}</Text> 
+        )}
+      </View>
+    );
+  }
+
+/*
     React.useEffect(() => { 
       register({ name: 'address'}, { required: true });
       register({ name: 'amount'}, { required: true });
       register({ name: 'privateKey'}, { required: true });
-      
     }, [register]);
-    
+    */
+   
     const onSubmit = (data) => {
       setLoading(true);
       createAndSendRawTransaction(
@@ -51,15 +64,89 @@ import { StyleSheet,
         .catch((error) => setError(error[0]?.message))
         .finally(() => setLoading(false));
     };
+  console.log(setValue)
   
     const getFeeFromSAPI = (amount) => {
-      getFee(Number(amount), address).then((fee) => {
+      console.log(address)
+      getFee(Number(amount), address)
+      
+      .then((fee) => {
         setFee(fee);
+        console.log(fee)
         if (fee && Number(getValues("amount")) + fee > balance) {
           setError("amount", "invalid", "Requested amount exceeds balance");
         }
       });
     };
+    
+    const [isValid, setIsValid] = useState(false);
+    const [addressTo, setAddressTo] = useState('');
+
+    const AddressTrue = async (value) => {
+      setIsValid(false);
+      let isValid = false;
+      console.log("entrou na isaddres")
+      const valueRight = value.nativeEvent.text;
+
+      await isAddress(valueRight)
+      .then(data => {
+        console.log('entrou .then')
+        setAddressTo(data);
+        isValid = true;
+        setIsValid(true);
+      })
+      .catch(data => data);
+        console.log('falseAddress')
+    if (isValid === false) {
+      setError("address", "invalid", "Invalid Address");
+    }
+    console.log(isValid)
+    return isValid;
+    }
+
+    const amountTrue = (value) => {
+      let amount = value.nativeEvent.text
+      
+        if (amount > balance) {
+          setError("amount", "invalid", "Exceeds balance");
+          return false;
+        }
+        if (amount < 0.001) {
+          setError(
+            "amount",
+            "invalid",
+            "The minimum amount to send is 0.001"
+          );
+          return false;
+        }
+        if (
+          !amount.match(
+            /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:((\.)\d{0,8})+)?$/
+          )
+        ) {
+          setError(
+            "amount",
+            "invalid",
+            "Invalid format. e.g. 0,000.00000000"
+          );
+          return false;
+        }
+    }
+
+    const  isppK = async (value) => {
+      const valueRight = value.nativeEvent.text;
+        let isValid = false;
+        await isPK(valueRight)
+          .then((data) => (isValid = true))
+          .catch((error) => {
+          setError("privateKey", "invalid", "Invalid Private Key");
+      });
+    }
+//https://sapi2.smartcash.org/v1/address/balance/STwPMFh4VRXS5asoxFFdk2hMezHu6WUiEP
+//lodash
+
+const values = getValues("amount");
+console.log(values)
       return(
       <View style={styles.container}>
 
@@ -78,81 +165,51 @@ import { StyleSheet,
             </TouchableHighlight>
           </View>
 
-          <TextInput 
-            style={styles.text}
-            onChangeText={text => setValue('addressTo', text, true)}
+          <TextInput style={styles.text}
+            value={addressTo}
+            onChangeText={text => setAddressTo(text)}
+            autoComplete="off"
             ref={register({
               required: true,
-              validate: async (value) => {
-                let isValid = false;
-                await isAddress(value)
-                  .then((data) => {
-                    isValid = true;
-                  })
-                  .catch((error) => {
-                    setError("addressTo", "invalid", "Invalid address");
-                  });
-                return isValid;
-              },
+              validate: isAddress,
             })}  
-            onInput={() => triggerValidation("addressTo")}
+            onChange={AddressTrue}
             placeholder="________________________________________________">
 
           </TextInput>
             
         </View> 
-        
+          
+        {isValid ? null : <ErrorAddress/>}
+
         <View style={styles.card}>
 
           <View style={styles.amount}>
             <Text>Amount to Send:</Text>
             <TextInput style={styles.amount} style={styles.amountWidth}
               keyboardType = 'numeric'
-              onChangeText={text => setValue('amount', text, true)}
+              onChangeText={Number =>setValue("amount",true, Number)}
               ref={register({
                 required: true,
-                validate: (value) => {
-                  if (value > balance) {
-                    setError("amount", "invalid", "Exceeds balance");
-                    return false;
-                  }
-                  if (value < 0.001) {
-                    setError(
-                      "amount",
-                      "invalid",
-                      "The minimum amount to send is 0.001"
-                    );
-                    return false;
-                  }
-                  if (
-                    !value.match(
-                      /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:((\.)\d{0,8})+)?$/
-                    )
-                  ) {
-                    setError(
-                      "amount",
-                      "invalid",
-                      "Invalid format. e.g. 0,000.00000000"
-                    );
-                    return false;
-                  }
-                },
+                validate: amountTrue
               })}
-              onInput={async (e) => {
-                const amount = e?.target?.value;
-                await triggerValidation("amount").then(
-                  (data) => data && getFeeFromSAPI(amount)
+              onChange={async (e) => {
+                const amount = value.nativeEvent.Number;
+                await triggerValidation(amount)
+                .then(
+                  (data) => data && getFeeFromSAPI(value.nativeEvent.text)
                 );
               }}
               placeholder="__________">
             </TextInput>
           </View>
-          {fee && (
-          <View style={styles.text}>
-            <Text>Fee: {fee} </Text> 
-            <Text>Amount with fee: {Number(getValues("amount"))+ fee }</Text>
-          </View>
-          )}
+          {isValid ?  (
+            <View style={styles.text}>
+              <Text>Fee: {fee} </Text> 
+              <Text>Amount with fee: {Number(getValues("amount"))+ fee }</Text>
+            </View>
+          ): null}
+         
           
         </View>
         
@@ -182,17 +239,10 @@ import { StyleSheet,
               onChangeText={text => setValue('privateKey', text, true)}
               ref={register({
                 required: true,
-                validate: async (value) => {
-                  let isValid = false;
-                  await isPK(value)
-                    .then((data) => (isValid = true))
-                    .catch((error) => {
-                      setError("privateKey", "invalid", "Invalid Private Key");
-                    });
-                  return isValid;
-                },
-                
-              })}
+                validate:isppK 
+                    
+              })
+            }
               placeholder="________________________________________________">
               
           </TextInput>
@@ -272,6 +322,11 @@ import { StyleSheet,
       shadowColor: 'black',
       shadowOffset: { width: -1, height: 10},
       shadowOpacity: 0.09,
+    },  
+    msgError:{
+      color:"#ff1111",
+      marginTop:-10,
+      marginBottom:-10
     }
   });
   
