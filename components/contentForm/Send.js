@@ -33,7 +33,7 @@ import { isAddress,
     setError,
     setValue,
     formState,
-    triggerValidation,} = useForm({mode: "onChange",})
+    triggerValidation,} = useForm({mode: "onChange",});
 
   const [isValid, setIsValid] = useState(false);
 
@@ -42,7 +42,6 @@ import { isAddress,
     getBalance(address)
       .then((res) => setBalance(res.balance))
       .catch((error) => setBalance("Error"));
-      
   }
 
   const AddressPKValidation = async (value) => {
@@ -95,18 +94,15 @@ import { isAddress,
     );
   } 
 
-  function Error(){
+  function ErrorAddress(){
     return(
       <View>
         {errors.address && (
-          <Text className="error-message">{errors.address.message}</Text> 
+          <Text className="error-message" style={styles.msgError}>{errors.address.message}</Text> 
         )}
       </View>
     );
   }
-
-
-  console.log(formState)
 
   return(
     <View style={styles.container}>
@@ -141,13 +137,11 @@ import { isAddress,
  
             placeholder="_________________________________________________">
           </TextInput>
-
+       
         </View>
 
-          {isValid ? <Balance/> : <Error/> }
-
+          {isValid ? <Balance/> : <ErrorAddress/> }
           {isValid ? <Forme/> : null}
-
       </View>
             
     </View>
@@ -211,11 +205,16 @@ const styles = StyleSheet.create({
   },
   balance:{
     flexDirection: 'row',
-    justifyContent:'space-between',
+    justifyContent:'space-around',
     flex:1,
     marginTop:-15,
     marginBottom:-10
   },  
+  msgError:{
+    color:"#ff1111",
+    marginTop:-10,
+    marginBottom:-10
+  }
 });
 
 export default Send;
