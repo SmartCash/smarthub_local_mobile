@@ -96,7 +96,7 @@ import { isAddress,
 
   function ErrorAddress(){
     return(
-      <View>
+      <View style={styles.marginError}>
         {errors.address && (
           <Text className="error-message" style={styles.msgError}>{errors.address.message}</Text> 
         )}
@@ -137,11 +137,10 @@ import { isAddress,
  
             placeholder="_________________________________________________">
           </TextInput>
-       
+          {isValid ? null : <ErrorAddress/> }
         </View>
-
-          {isValid ? <Balance/> : <ErrorAddress/> }
-          {isValid ? <Forme/> : null}
+          {isValid ? <Balance/> : null}
+          {isValid ? <Forme address={address} balance={balance} privateKey={privateKey} /> : null}
       </View>
             
     </View>
@@ -214,6 +213,9 @@ const styles = StyleSheet.create({
     color:"#ff1111",
     marginTop:-10,
     marginBottom:-10
+  },
+  marginError:{
+    marginTop:10
   }
 });
 
