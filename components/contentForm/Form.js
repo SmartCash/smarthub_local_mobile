@@ -30,11 +30,23 @@ import { StyleSheet,
       triggerValidation,
       getValues,
     } = useForm({ mode: "onChange", defaultValues: {
-        amount: withdraw ? Number(balance - 0.002).toFixed(4) : null
-      } });
+      amount: withdraw ? Number(balance - 0.002).toFixed(4) : null
+    } });
+    
+    const [amount, setAmount] = useState();
+    const [pvk, setPvk] = useState();
+    const [isValidPvk, setIsValidPvk] = useState();
 
-  const [amount, setAmount] = useState();
+    const [isValid, setIsValid] = useState(false);
 
+    const [addressTo, setAddressTo] = useState('');
+  /*  
+    React.useEffect(() => { 
+      register({ name: 'address'}, { required: true });
+      register({ name: 'amount'}, { required: true });
+      register({ name: 'privateKey'}, { required: true });
+    }, [register]);
+*/
   function ErrorAddress (){
     return(
       <View>
@@ -45,13 +57,25 @@ import { StyleSheet,
     );
   }
 
-/*
-    React.useEffect(() => { 
-      register({ name: 'address'}, { required: true });
-      register({ name: 'amount'}, { required: true });
-      register({ name: 'privateKey'}, { required: true });
-    }, [register]);
-    */
+  function ErrorPvk (){
+    return(
+      <View>
+        {errors.privateKey && (
+          <Text className="error-message" style={styles.msgError}>{errors.privateKey.message}</Text>
+        )}
+    </View>
+    );
+  }
+
+  function ErrorAmount (){
+    return(
+      <View>
+        {errors.amount && (
+          <Text className="error-message">{errors.amount.message}</Text>
+        )}
+    </View>
+    );
+  }
    
     const onSubmit = (data) => {
       setLoading(true);
@@ -64,43 +88,33 @@ import { StyleSheet,
         .catch((error) => setError(error[0]?.message))
         .finally(() => setLoading(false));
     };
-  console.log(setValue)
-  
     const getFeeFromSAPI = (amount) => {
-      console.log(address)
       getFee(Number(amount), address)
       
       .then((fee) => {
         setFee(fee);
-        console.log(fee)
         if (fee && Number(getValues("amount")) + fee > balance) {
           setError("amount", "invalid", "Requested amount exceeds balance");
         }
       });
     };
-    
-    const [isValid, setIsValid] = useState(false);
-    const [addressTo, setAddressTo] = useState('');
-
     const AddressTrue = async (value) => {
       setIsValid(false);
       let isValid = false;
-      console.log("entrou na isaddres")
       const valueRight = value.nativeEvent.text;
-
+      
       await isAddress(valueRight)
       .then(data => {
-        console.log('entrou .then')
         setAddressTo(data);
         isValid = true;
         setIsValid(true);
       })
       .catch(data => data);
-        console.log('falseAddress')
+
     if (isValid === false) {
       setError("address", "invalid", "Invalid Address");
     }
-    console.log(isValid)
+
     return isValid;
     }
 
@@ -133,20 +147,24 @@ import { StyleSheet,
         }
     }
 
-    const  isppK = async (value) => {
+    const Pkvalidation = async (value) => {
+      setIsValidPvk(false);
+      let isValid = false
       const valueRight = value.nativeEvent.text;
-        let isValid = false;
-        await isPK(valueRight)
-          .then((data) => (isValid = true))
-          .catch((error) => {
-          setError("privateKey", "invalid", "Invalid Private Key");
-      });
+      
+      await isPK(valueRight)
+        .then(() => {
+          setPvk(valueRight);
+          isValid = true;
+          setIsValidPvk(true);
+          
+        })
+        .catch(data => data);
+        
+      if (isValid === false) {
+        setError("privateKey", "invalid", "Invalid privateKey");
+      }
     }
-//https://sapi2.smartcash.org/v1/address/balance/STwPMFh4VRXS5asoxFFdk2hMezHu6WUiEP
-//lodash
-
-const values = getValues("amount");
-console.log(values)
       return(
       <View style={styles.container}>
 
@@ -177,10 +195,12 @@ console.log(values)
             placeholder="________________________________________________">
 
           </TextInput>
+          <View style={styles.marginError}>
+            {!isValid ? <ErrorAddress/> : null}
+          </View>
             
         </View> 
           
-        {isValid ? null : <ErrorAddress/>}
 
         <View style={styles.card}>
 
@@ -188,7 +208,7 @@ console.log(values)
             <Text>Amount to Send:</Text>
             <TextInput style={styles.amount} style={styles.amountWidth}
               keyboardType = 'numeric'
-              onChangeText={Number =>setValue("amount",true, Number)}
+              onChangeText={Number =>setAmount(Number)}
               ref={register({
                 required: true,
                 validate: amountTrue
@@ -213,9 +233,7 @@ console.log(values)
           
         </View>
         
-        {errors.amount && (
-          <Text className="error-message">{errors.amount.message}</Text>
-        )}
+        <ErrorAmount/>
 
         {!privateKey ?(
         //card private Key
@@ -236,24 +254,27 @@ console.log(values)
           
             <TextInput 
               style={styles.text}
-              onChangeText={text => setValue('privateKey', text, true)}
+              value={pvk}
+              onChangeText={text => setPvk(text)}
               ref={register({
                 required: true,
-                validate:isppK 
+                validate:isPK 
                     
               })
             }
+            onChange={Pkvalidation}
               placeholder="________________________________________________">
               
           </TextInput>
-        
-            {errors.privateKey && (
-              <Text className="error-message">{errors.privateKey.message}</Text>
-            )}
-
+          <View style={styles.marginError}>
+            {isValidPvk ? null : <ErrorPvk/>}
           </View>
-      
+         
+          </View>
+    
         ) : null}  
+
+          
 
         <View>
           <TouchableHighlight onPress={()=>{}}>
@@ -327,6 +348,9 @@ console.log(values)
       color:"#ff1111",
       marginTop:-10,
       marginBottom:-10
+    },
+    marginError:{
+      marginTop:10
     }
   });
   
