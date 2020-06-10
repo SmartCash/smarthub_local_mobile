@@ -1,39 +1,44 @@
-import React, { useState } from 'react';
-import { StyleSheet,
+import React, { useState } from "react";
+import {
+  StyleSheet,
   View,
-  Button, 
+  Button,
   Linking,
   Text,
   TouchableHighlight,
   TouchableOpacity,
-  TextInput } from 'react-native';
+  TextInput,
+} from "react-native";
 
 import Modal from "../contentComponents/Modal";
 
-import { isAddress,
+import {
+  isAddress,
   isPK,
   getBalance,
   getAddress,
-  createNewWalletKeyPair } from '../../lib/sapi';
-  import { useForm } from "react-hook-form";
+  createNewWalletKeyPair,
+} from "../../lib/sapi";
+import { useForm } from "react-hook-form";
 
-  import Forme from '../contentForm/Form';
+import Forme from "../contentForm/Form";
 
- function Send() {
-  
+function Send() {
   //address return true on input
   //needed to validate balance and privateKey
   //formsState return always true in object
 
-  const [address, setAddress] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
+  const [address, setAddress] = useState("");
+  const [privateKey, setPrivateKey] = useState("");
   const [balance, setBalance] = useState();
-  const {register,
+  const {
+    register,
     errors,
     setError,
     setValue,
     formState,
-    triggerValidation,} = useForm({mode: "onChange",});
+    triggerValidation,
+  } = useForm({ mode: "onChange" });
 
   const [isValid, setIsValid] = useState(false);
 
@@ -42,21 +47,21 @@ import { isAddress,
     getBalance(address)
       .then((res) => setBalance(res.balance))
       .catch((error) => setBalance("Error"));
-  }
+  };
 
   const AddressPKValidation = async (value) => {
     setIsValid(false);
     let isValid = false;
     const valueRight = value.nativeEvent.text;
-    
+
     await isAddress(valueRight)
-      .then(data => {
+      .then((data) => {
         setAddress(data);
         getBalanceFromSAPI(data);
         isValid = true;
         setIsValid(true);
       })
-      .catch(data => data);
+      .catch((data) => data);
 
     await isPK(valueRight)
       .then(() => {
@@ -66,157 +71,157 @@ import { isAddress,
         getBalanceFromSAPI(address);
         isValid = true;
       })
-      .catch(data => data);
-      
+      .catch((data) => data);
+
     if (isValid === false) {
       setError("address", "invalid", "Invalid Address");
     }
     return isValid;
-  }
+  };
 
-  function Balance(){
-    return(
+  function Balance() {
+    return (
       <View style={styles.balance}>
-
         <View style={styles.button}>
           <Text style={styles.textBalance}>Your Balance:{balance}</Text>
         </View>
 
         <View style={styles.button}>
-          <TouchableOpacity 
-              onPress={ ()=> Linking.openURL(`https://insight.smartcash.cc/address/${address}`)}>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(`https://insight.smartcash.cc/address/${address}`)
+            }
+          >
             <Text style={styles.text}>Show Transactions</Text>
           </TouchableOpacity>
         </View>
-
-    </View>
-
+      </View>
     );
-  } 
+  }
 
-  function ErrorAddress(){
-    return(
+  function ErrorAddress() {
+    return (
       <View style={styles.marginError}>
         {errors.address && (
-          <Text className="error-message" style={styles.msgError}>{errors.address.message}</Text> 
+          <Text className="error-message" style={styles.msgError}>
+            {errors.address.message}
+          </Text>
         )}
       </View>
     );
   }
 
-  return(
+  return (
     <View style={styles.container}>
-
       <View style={styles.card}>
-
         <View style={styles.contentCard}>
-
           <View style={styles.adress}>
             <Text>Your Address or Private Key </Text>
             <TouchableHighlight
               onPress={() => {
-              this.setModalVisible(!modalVisible);
+                this.setModalVisible(!modalVisible);
               }}
             >
-            <View style={styles.qr}>
-              <Modal/>
-            </View> 
-          </TouchableHighlight>
+              <View style={styles.qr}>
+                <Modal />
+              </View>
+            </TouchableHighlight>
           </View>
 
-          <TextInput style={styles.input}
+          <TextInput
+            style={styles.input}
             value={address}
-            onChangeText={text => setAddress(text)}
+            onChangeText={(text) => setAddress(text)}
             autoComplete="off"
             ref={register({
               required: true,
               validate: AddressPKValidation,
             })}
             //onInput={() => triggerValidation("addressTo")}
-            onChange={AddressPKValidation}  
- 
-            placeholder="_________________________________________________">
-          </TextInput>
-          {isValid ? null : <ErrorAddress/> }
+            onChange={AddressPKValidation}
+            placeholder="_________________________________________________"
+          ></TextInput>
+          {isValid ? null : <ErrorAddress />}
         </View>
-          {isValid ? <Balance/> : null}
-          {isValid ? <Forme address={address} balance={balance} privateKey={privateKey} /> : null}
+        {isValid ? <Balance /> : null}
+        {isValid ? (
+          <Forme address={address} balance={balance} privateKey={privateKey} />
+        ) : null}
       </View>
-            
     </View>
   );
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
   },
   input: {
     padding: 10,
-    color: 'rgba(0,0,0,0.6)',
+    color: "rgba(0,0,0,0.6)",
     fontSize: 15,
-    lineHeight:20,
+    lineHeight: 20,
   },
   adress: {
-    marginTop:'2%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginTop: "2%",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   qr: {
-    backgroundColor: '#fff',
-    marginRight:10
+    backgroundColor: "#fff",
+    marginRight: 10,
   },
   card: {
     marginTop: 10,
     marginLeft: 12,
     marginRight: 12,
-    shadowColor: 'black',
-    shadowOffset: { width: -1, height: 2},
+    shadowColor: "black",
+    shadowOffset: { width: -1, height: 2 },
     shadowOpacity: 0.26,
     shadowRadius: 5,
-    backgroundColor:'#fff',
-    padding:10,
+    backgroundColor: "#fff",
+    padding: 10,
   },
-  contentCard:{
+  contentCard: {
     marginBottom: 20,
-    backgroundColor:'#f1f1f2',
-    padding:10,
-    shadowColor: 'black',
-    shadowOffset: { width: -1, height: 10},
+    backgroundColor: "#f1f1f2",
+    padding: 10,
+    shadowColor: "black",
+    shadowOffset: { width: -1, height: 10 },
     shadowOpacity: 0.09,
-    width:325,
+    width: 325,
   },
-  text:{
-    shadowOffset: { width: -1, height: 2},
+  text: {
+    shadowOffset: { width: -1, height: 2 },
     shadowOpacity: 0.26,
     shadowRadius: 5,
-    padding:5,
-    backgroundColor:'#f1f1f1'
+    padding: 5,
+    backgroundColor: "#f1f1f1",
   },
-  textBalance:{
+  textBalance: {
     shadowRadius: 5,
-    padding:5,
-    backgroundColor:'#f1f1f2'
+    padding: 5,
+    backgroundColor: "#f1f1f2",
   },
-  button:{
+  button: {
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  balance:{
-    flexDirection: 'row',
-    justifyContent:'space-around',
-    flex:1,
-    marginTop:-15,
-    marginBottom:-10
-  },  
-  msgError:{
-    color:"#ff1111",
-    marginTop:-10,
-    marginBottom:-10
+  balance: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    flex: 1,
+    marginTop: -15,
+    marginBottom: -10,
   },
-  marginError:{
-    marginTop:10
-  }
+  msgError: {
+    color: "#ff1111",
+    marginTop: -10,
+    marginBottom: -10,
+  },
+  marginError: {
+    marginTop: 10,
+  },
 });
 
 export default Send;
