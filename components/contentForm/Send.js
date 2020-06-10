@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   contentCard:{
     marginBottom: 20,
-    backgroundColor:'#fff',
+    backgroundColor:'#f1f1f2',
     padding:10,
     shadowColor: 'black',
     shadowOffset: { width: -1, height: 10},
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   textBalance:{
     shadowRadius: 5,
     padding:5,
-    backgroundColor:'#fff'
+    backgroundColor:'#f1f1f2'
   },
   button:{
     paddingHorizontal: 10,
