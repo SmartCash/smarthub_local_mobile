@@ -73,14 +73,14 @@ function Form({ address, balance, privateKey, withdraw }) {
     return (
       <View>
         {errors.amount && (
-          <Text className="error-message">{errors.amount.message}</Text>
+          <Text className="error-message" style={styles.msgError}>{errors.amount.message}</Text>
         )}
       </View>
     );
   }
 
   const getFeeFromSAPI = async (amount) => {
-    console.log("entou")
+    console.log("entrou")
     console.log(amount)
     await getFee(Number(amount), address).then((fee) => {
       console.log(fee)
@@ -202,16 +202,9 @@ function Form({ address, balance, privateKey, withdraw }) {
             onChangeText={(text) => setAmount(text)}
             ref={register({
               required: true,
-              validate: amountTrue,
+              validate: getFeeFromSAPI(amount),
             })}
-            onChange={async (e) => {
-              console.log(e.nativeEvent.text)
-              const amount = e.nativeEvent.text;
-             
-              await triggerValidation(amount).then(
-                (data) => data && getFeeFromSAPI(e.nativeEvent.text)
-              );
-            }}
+            onChange={amountTrue}
             placeholder="__________"
           ></TextInput>
         </View>
@@ -219,7 +212,7 @@ function Form({ address, balance, privateKey, withdraw }) {
         {isValid ? (
           <View style={styles.text}>
             <Text>Fee: {fee} </Text>
-            <Text>Amount with fee: {Number(getValues(amount)) + fee}</Text>
+            <Text>Amount with fee: {Number(amount + fee)}</Text>
           </View>
         ) : null}
       </View>
