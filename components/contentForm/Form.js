@@ -80,11 +80,9 @@ function Form({ address, balance, privateKey, withdraw }) {
   }
 
   const getFeeFromSAPI = async (amount) => {
-    console.log("entrou")
-    console.log(amount)
     await getFee(Number(amount), address).then((fee) => {
-      console.log(fee)
       setFee(fee);
+      console.log(fee)
       if (fee && Number(amount) + fee > balance) {
         setError("amount", "invalid", "Requested amount exceeds balance");
       }
@@ -158,6 +156,17 @@ function Form({ address, balance, privateKey, withdraw }) {
       .finally(() => setLoading(false));
   };
 
+  function showTxid(){
+    if (txid){
+    return (
+      <View>
+        <Text>Amount has been sent</Text>
+        <Button title="click to view details" onPress={()=>{
+          Linking.openURL(`https://insight.smartcash.cc/tx/${txid}`)}}/>
+        <Text>{txid}</Text>
+      </View>
+    )}
+  };
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.card} /*card address */>
@@ -212,7 +221,7 @@ function Form({ address, balance, privateKey, withdraw }) {
         {isValid ? (
           <View style={styles.text}>
             <Text>Fee: {fee} </Text>
-            <Text>Amount with fee: {Number(amount + fee)}</Text>
+            <Text>Amount with fee: {Number(parseFloat(amount) + parseFloat(fee))}</Text>
           </View>
         ) : null}
       </View>
