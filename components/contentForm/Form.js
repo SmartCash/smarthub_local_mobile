@@ -7,6 +7,7 @@ import {
   TouchableHighlight,
   Button,
   KeyboardAvoidingView,
+  Linking
 } from "react-native";
 import Modal from "../contentComponents/Modal";
 import { useForm } from "react-hook-form";
@@ -18,6 +19,7 @@ import {
 } from "../../lib/sapi";
 
 function Form({ address, balance, privateKey, withdraw }) {
+  
   const [txid, setTxId] = useState();
   const [fee, setFee] = useState();
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,7 @@ function Form({ address, balance, privateKey, withdraw }) {
     errors,
     setError,
     setValue,
+    clearError,
     formState,
     triggerValidation,
     getValues,
@@ -37,7 +40,7 @@ function Form({ address, balance, privateKey, withdraw }) {
       amount: withdraw ? Number(balance - 0.002).toFixed(4) : null,
     },
   });
-
+  console.log(balance);
   const [isValid, setIsValid] = useState(false);
   const [isValidPvk, setIsValidPvk] = useState();
 
@@ -82,8 +85,9 @@ function Form({ address, balance, privateKey, withdraw }) {
   const getFeeFromSAPI = async (amount) => {
     await getFee(Number(amount), address).then((fee) => {
       setFee(fee);
-      console.log(fee)
-      if (fee && Number(amount) + fee > balance) {
+      let somafee = parseFloat(amount) + parseFloat(fee);
+
+      if (somafee > parseFloat(balance)) {
         setError("amount", "invalid", "Requested amount exceeds balance");
       }
     });
@@ -108,10 +112,9 @@ function Form({ address, balance, privateKey, withdraw }) {
 
     return isValid;
   };
-
   const amountTrue = (value) => {
-    let amount = value.nativeEvent.text;
-    console.log("entrou no click");
+    let amount = parseFloat(value.nativeEvent.text).toFixed(8);
+    balance = parseFloat(balance).toFixed(8);
     if (amount > balance) {
       setError("amount", "invalid", "Exceeds balance");
       return false;
@@ -124,6 +127,7 @@ function Form({ address, balance, privateKey, withdraw }) {
       setError("amount", "invalid", "Invalid format. e.g. 0,000.00000000");
       return false;
     }
+      return clearError("amount");
   };
 
   const pvkTrue = async (value) => {
@@ -156,17 +160,6 @@ function Form({ address, balance, privateKey, withdraw }) {
       .finally(() => setLoading(false));
   };
 
-  function showTxid(){
-    if (txid){
-    return (
-      <View>
-        <Text>Amount has been sent</Text>
-        <Button title="click to view details" onPress={()=>{
-          Linking.openURL(`https://insight.smartcash.cc/tx/${txid}`)}}/>
-        <Text>{txid}</Text>
-      </View>
-    )}
-  };
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.card} /*card address */>
@@ -262,10 +255,21 @@ function Form({ address, balance, privateKey, withdraw }) {
         </View>
       ) : null}
 
+        {txid ? 
+        <View>
+          <Text>Amount has been sent</Text>
+          <Button title="click to view details" onPress={()=>{
+            Linking.openURL(`https://insight.smartcash.cc/tx/${txid}`)}}/>
+          <Text>{txid}</Text>
+        </View> : null}
+
       <View>
-        <TouchableHighlight onPress={handleSubmit(onSubmit)}>
-          <Button title="Send" disabled={loading || formState.isValid}></Button>
+        <TouchableHighlight onPress={onSubmit}>
+          <Button title="Send" disabled={loading || !isValidPvk}></Button>
         </TouchableHighlight>
+      </View>
+      <View>
+        
       </View>
     </KeyboardAvoidingView>
   );
