@@ -148,13 +148,9 @@ function Form({ address, balance, privateKey, withdraw }) {
     }
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = () => {
     setLoading(true);
-    createAndSendRawTransaction(
-      data?.addressTo,
-      Number(data?.amount),
-      String(privateKey || data?.privateKey)
-    )
+    createAndSendRawTransaction(String(addressTo), Number(amount), String(pvk))
       .then((data) => setTxId(data?.txid))
       .catch((error) => setError(error[0]?.message))
       .finally(() => setLoading(false));
@@ -162,6 +158,7 @@ function Form({ address, balance, privateKey, withdraw }) {
 
   return (
     <KeyboardAvoidingView style={styles.container}>
+      
       <View style={styles.card} /*card address */>
         <View style={styles.address}>
           <Text>Address to Send</Text>
@@ -255,19 +252,21 @@ function Form({ address, balance, privateKey, withdraw }) {
         </View>
       ) : null}
 
-        {txid ? 
+
+      <View>
+        <TouchableHighlight>
+          <Button title="Send" disabled={loading || !isValidPvk} onPress={()=>onSubmit()} />
+        </TouchableHighlight>
+      </View>        
+      {txid ? 
         <View>
           <Text>Amount has been sent</Text>
           <Button title="click to view details" onPress={()=>{
             Linking.openURL(`https://insight.smartcash.cc/tx/${txid}`)}}/>
           <Text>{txid}</Text>
-        </View> : null}
+        </View> : 
+        null}
 
-      <View>
-        <TouchableHighlight onPress={onSubmit}>
-          <Button title="Send" disabled={loading || !isValidPvk}></Button>
-        </TouchableHighlight>
-      </View>
       <View>
         
       </View>
