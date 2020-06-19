@@ -6,10 +6,8 @@ import {
   TextInput,
   TouchableHighlight,
   Button,
-  KeyboardAvoidingView,
-  Linking
+  Platform,
 } from "react-native";
-import Modal from "../contentComponents/Modal";
 import { useForm } from "react-hook-form";
 import {
   createAndSendRawTransaction,
@@ -17,13 +15,19 @@ import {
   isAddress,
   isPK,
 } from "../../lib/sapi";
+import Styles from "./styles";
+import ComponentModal from "../contentComponents/Modal";
+import ErrorAddress from "./showErros/ErrorAddress";
+import ErrorAmount from "./showErros/ErrorAmount";
+import ErrorPvk from "./showErros/ErrorPvk";
+import ShowInsight from "./ShowInsight";
 
 function Form({ address, balance, privateKey, withdraw }) {
-  
   const [txid, setTxId] = useState();
   const [fee, setFee] = useState();
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState();
+  const [modal, setModal] = useState(false);
   const {
     register,
     handleSubmit,
@@ -40,47 +44,12 @@ function Form({ address, balance, privateKey, withdraw }) {
       amount: withdraw ? Number(balance - 0.002).toFixed(4) : null,
     },
   });
-  console.log(balance);
   const [isValid, setIsValid] = useState(false);
   const [isValidPvk, setIsValidPvk] = useState();
 
   const [amount, setAmount] = useState();
   const [pvk, setPvk] = useState();
   const [addressTo, setAddressTo] = useState("");
-
-  function ErrorAddress() {
-    return (
-      <View>
-        {errors.address && (
-          <Text className="error-message" style={styles.msgError}>
-            {errors.address.message}
-          </Text>
-        )}
-      </View>
-    );
-  }
-
-  function ErrorPvk() {
-    return (
-      <View>
-        {errors.privateKey && (
-          <Text className="error-message" style={styles.msgError}>
-            {errors.privateKey.message}
-          </Text>
-        )}
-      </View>
-    );
-  }
-
-  function ErrorAmount() {
-    return (
-      <View>
-        {errors.amount && (
-          <Text className="error-message" style={styles.msgError}>{errors.amount.message}</Text>
-        )}
-      </View>
-    );
-  }
 
   const getFeeFromSAPI = async (amount) => {
     await getFee(Number(amount), address).then((fee) => {
@@ -127,7 +96,7 @@ function Form({ address, balance, privateKey, withdraw }) {
       setError("amount", "invalid", "Invalid format. e.g. 0,000.00000000");
       return false;
     }
-      return clearError("amount");
+    return clearError("amount");
   };
 
   const pvkTrue = async (value) => {
@@ -157,24 +126,23 @@ function Form({ address, balance, privateKey, withdraw }) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      
-      <View style={styles.card} /*card address */>
-        <View style={styles.address}>
+    <View>
+      <View style={Styles.card} /*card address */>
+        <View style={Styles.address}>
           <Text>Address to Send</Text>
           <TouchableHighlight
             onPress={() => {
               this.setModalVisible(!modalVisible);
             }}
           >
-            <View style={styles.qr}>
-              <Modal />
+            <View style={Styles.qr}>
+              <ComponentModal />
             </View>
           </TouchableHighlight>
         </View>
 
         <TextInput
-          style={styles.text}
+          style={Styles.text}
           value={addressTo}
           onChangeText={(text) => setAddressTo(text)}
           autoComplete="off"
@@ -186,18 +154,20 @@ function Form({ address, balance, privateKey, withdraw }) {
           placeholder="________________________________________________"
         ></TextInput>
 
-        <View style={styles.marginError}>
-          {!isValid ? <ErrorAddress /> : null}
+        <View style={Styles.marginError}>
+          {!isValid ? <ErrorAddress errors={errors} /> : null}
         </View>
       </View>
 
-      <View style={styles.card} /*card amount */>
-        <View style={styles.amount}>
+      <View style={Styles.card} /*card amount */>
+        <View style={Styles.amount}>
           <Text>Amount to Send:</Text>
           <TextInput
-            style={styles.amount}
-            style={styles.amountWidth}
-            keyboardType="numeric"
+            style={Styles.amount}
+            style={Styles.amountWidth}
+            keyboardType={
+              Platform.OS == "android" ? "numeric" : "numbers-and-punctuation"
+            }
             onChangeText={(text) => setAmount(text)}
             ref={register({
               required: true,
@@ -209,33 +179,34 @@ function Form({ address, balance, privateKey, withdraw }) {
         </View>
 
         {isValid ? (
-          <View style={styles.text}>
+          <View style={Styles.text}>
             <Text>Fee: {fee} </Text>
-            <Text>Amount with fee: {Number(parseFloat(amount) + parseFloat(fee))}</Text>
+            <Text>
+              Amount with fee: {Number(parseFloat(amount) + parseFloat(fee))}
+            </Text>
+            <ErrorAmount errors={errors} />
           </View>
         ) : null}
       </View>
 
-      <ErrorAmount />
-
       {!privateKey ? (
         //card private Key
-        <View style={styles.card}>
-          <View style={styles.address}>
+        <View style={Styles.card}>
+          <View style={Styles.address}>
             <Text>Your private Key</Text>
             <TouchableHighlight
               onPress={() => {
                 this.setModalVisible(!modalVisible);
               }}
             >
-              <View style={styles.qr}>
-                <Modal />
+              <View style={Styles.qr}>
+                <ComponentModal />
               </View>
             </TouchableHighlight>
           </View>
 
           <TextInput
-            style={styles.text}
+            style={Styles.text}
             value={pvk}
             onChangeText={(text) => setPvk(text)}
             ref={register({
@@ -246,97 +217,31 @@ function Form({ address, balance, privateKey, withdraw }) {
             placeholder="________________________________________________"
           ></TextInput>
 
-          <View style={styles.marginError}>
-            {isValidPvk ? null : <ErrorPvk />}
+          <View style={Styles.marginError}>
+            {isValidPvk ? null : <ErrorPvk errors={errors} />}
           </View>
         </View>
       ) : null}
 
-
-      <View>
+      <View style={Styles.buttonSend} style={styles.button}>
         <TouchableHighlight>
-          <Button title="Send" disabled={loading || !isValidPvk} onPress={()=>onSubmit()} />
+          <Button
+            title="Send"
+            disabled={loading || !isValidPvk}
+            onPress={() => onSubmit()}
+          />
         </TouchableHighlight>
-      </View>        
-      {txid ? 
-        <View>
-          <Text>Amount has been sent</Text>
-          <Button title="click to view details" onPress={()=>{
-            Linking.openURL(`https://insight.smartcash.cc/tx/${txid}`)}}/>
-          <Text>{txid}</Text>
-        </View> : 
-        null}
-
-      <View>
-        
       </View>
-    </KeyboardAvoidingView>
+
+      {txid ? <ShowInsight txid={txid} a={true} /> : null}
+    </View>
   );
 }
 
 export default Form;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  text: {
-    color: "rgba(0,0,0,0.6)",
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  Balance: {
-    marginLeft: 10,
-    marginTop: 1,
-    marginBottom: 5,
-  },
-  address: {
-    marginTop: "2%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  amount: {
-    flexDirection: "row",
-    alignContent: "flex-end",
-  },
-  amountWidth: {
-    justifyContent: "space-between",
-    width: 100,
-    alignItems: "center",
-    alignContent: "flex-end",
-    flexDirection: "row",
-    marginLeft: 50,
-  },
-  qr: {
-    backgroundColor: "#fff",
-  },
-  Button: {
-    borderRadius: 50,
-  },
-  card: {
-    marginTop: 10,
-    marginBottom: 20,
-    shadowColor: "black",
-    shadowOffset: { width: -1, height: 2 },
-    shadowOpacity: 0.26,
-    shadowRadius: 5,
-    backgroundColor: "#f1f1f2",
-    padding: 20,
-  },
-  contentCard: {
-    marginBottom: 20,
-    backgroundColor: "#fff",
-    padding: 10,
-    shadowColor: "black",
-    shadowOffset: { width: -1, height: 10 },
-    shadowOpacity: 0.09,
-  },
-  msgError: {
-    color: "#ff1111",
-    marginTop: -10,
-    marginBottom: -10,
-  },
-  marginError: {
+  button: {
     marginTop: 10,
   },
 });
