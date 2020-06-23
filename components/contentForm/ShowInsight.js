@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, Linking, Modal, StyleSheet, Button } from "react-native";
+
 function ShowInsight({ txid, a }) {
   const [modalVisible, setModalVisible] = useState(a);
 
@@ -20,7 +21,6 @@ function ShowInsight({ txid, a }) {
                 title="Exit"
                 onPress={() => {
                   setModalVisible(false);
-                  //needed reload screen
                 }}
               />
             </View>

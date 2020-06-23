@@ -27,9 +27,9 @@ function Form({ address, balance, privateKey, withdraw }) {
   const [fee, setFee] = useState();
   const [loading, setLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
-  const [isValidPvk, setIsValidPvk] = useState();
+  const [isValidPvk, setIsValidPvk] = useState(privateKey ? true : false);
   const [amount, setAmount] = useState();
-  const [pvk, setPvk] = useState();
+  const [pvk, setPvk] = useState(privateKey);
   const [addressTo, setAddressTo] = useState("");
   const {
     register,
@@ -47,7 +47,6 @@ function Form({ address, balance, privateKey, withdraw }) {
       amount: withdraw ? Number(balance - 0.002).toFixed(4) : null,
     },
   });
-
 
   const getFeeFromSAPI = async (amount) => {
     await getFee(Number(amount), address).then((fee) => {
@@ -230,7 +229,6 @@ function Form({ address, balance, privateKey, withdraw }) {
           />
         </TouchableHighlight>
       </View>
-
       {txid ? <ShowInsight txid={txid} a={true} /> : null}
     </View>
   );

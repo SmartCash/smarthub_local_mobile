@@ -137,3 +137,4 @@ chrome-user-data
 *.sublime-workspace
 .idea
 *.iml
+.expo

@@ -56,7 +56,7 @@ function Send() {
       .then(() => {
         const address = getAddress(valueRight);
         setPrivateKey(valueRight);
-        setAddress(address)
+        setAddress(address);
         getBalanceFromSAPI(address);
         setIsValid(true);
         isValid = true;
@@ -110,5 +110,4 @@ function Send() {
     </View>
   );
 }
-const styles = StyleSheet.create({});
 export default Send;
