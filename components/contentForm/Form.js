@@ -26,8 +26,11 @@ function Form({ address, balance, privateKey, withdraw }) {
   const [txid, setTxId] = useState();
   const [fee, setFee] = useState();
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState();
-  const [modal, setModal] = useState(false);
+  const [isValid, setIsValid] = useState(false);
+  const [isValidPvk, setIsValidPvk] = useState();
+  const [amount, setAmount] = useState();
+  const [pvk, setPvk] = useState();
+  const [addressTo, setAddressTo] = useState("");
   const {
     register,
     handleSubmit,
@@ -44,12 +47,7 @@ function Form({ address, balance, privateKey, withdraw }) {
       amount: withdraw ? Number(balance - 0.002).toFixed(4) : null,
     },
   });
-  const [isValid, setIsValid] = useState(false);
-  const [isValidPvk, setIsValidPvk] = useState();
 
-  const [amount, setAmount] = useState();
-  const [pvk, setPvk] = useState();
-  const [addressTo, setAddressTo] = useState("");
 
   const getFeeFromSAPI = async (amount) => {
     await getFee(Number(amount), address).then((fee) => {
