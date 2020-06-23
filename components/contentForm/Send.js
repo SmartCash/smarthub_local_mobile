@@ -55,9 +55,10 @@ function Send() {
     await isPK(valueRight)
       .then(() => {
         const address = getAddress(valueRight);
-        setAddress(address);
         setPrivateKey(valueRight);
+        setAddress(address)
         getBalanceFromSAPI(address);
+        setIsValid(true);
         isValid = true;
       })
       .catch((data) => data);
