@@ -24,6 +24,7 @@ function ShowInsight({ txid, a }) {
                 }}
               />
             </View>
+            <Text>{txid}</Text>
           </View>
         </View>
       </Modal>
