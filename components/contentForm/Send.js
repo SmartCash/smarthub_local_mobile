@@ -49,6 +49,8 @@ function Send() {
         getBalanceFromSAPI(data);
         isValid = true;
         setIsValid(true);
+        setPrivateKey(null)
+        return(isValid)
       })
       .catch((data) => data);
 
@@ -56,10 +58,10 @@ function Send() {
       .then(() => {
         const address = getAddress(valueRight);
         setPrivateKey(valueRight);
-        setAddress(address);
         getBalanceFromSAPI(address);
         setIsValid(true);
         isValid = true;
+        if (address ? setPrivateKey(null) : setPrivateKey(valueRight));
       })
       .catch((data) => data);
 
