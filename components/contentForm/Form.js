@@ -24,6 +24,7 @@ import ShowInsight from "./ShowInsight";
 
 function Form({ address, balance, privateKey, withdraw }) {
   const [txid, setTxId] = useState();
+  const [txidTrue, setTxidTrue] = useState(false);
   const [fee, setFee] = useState();
   const [loading, setLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
@@ -114,12 +115,21 @@ function Form({ address, balance, privateKey, withdraw }) {
     }
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     setLoading(true);
-    createAndSendRawTransaction(String(addressTo), Number(amount), String(pvk))
-      .then((data) => setTxId(data?.txid))
+    await createAndSendRawTransaction(
+      String(addressTo),
+      Number(parseFloat(amount)),
+      String(pvk)
+    )
+      .then((data) => setTxId(data?.txid), setTxidTrue(true))
       .catch((error) => setError(error[0]?.message))
-      .finally(() => setLoading(false));
+      .finally(
+        () => setLoading(false),
+        setIsValidPvk(false),
+        setPvk(""),
+        setAddressTo(""),
+      );
   };
 
   return (
@@ -186,7 +196,7 @@ function Form({ address, balance, privateKey, withdraw }) {
         ) : null}
       </View>
 
-      {!privateKey ? (
+      {!isValidPvk ? (
         //card private Key
         <View style={Styles.card}>
           <View style={Styles.address}>
@@ -230,6 +240,13 @@ function Form({ address, balance, privateKey, withdraw }) {
         </TouchableHighlight>
       </View>
       {txid ? <ShowInsight txid={txid} a={true} /> : null}
+      {txidTrue ? (
+        <View>
+          <Text>{txid} certo porem sem txid</Text>
+        </View>
+      ) : (
+        <Text>Erro na bagaça</Text>
+      )}
     </View>
   );
 }
