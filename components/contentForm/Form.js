@@ -50,7 +50,7 @@ function Form({ address, balance, privateKey, withdraw }) {
   });
 
   const getFeeFromSAPI = async (amount) => {
-    await getFee(Number(amount), address).then((fee) => {
+    await getFee(parseFloat(amount), address).then((fee) => {
       setFee(fee);
       let somafee = parseFloat(amount) + parseFloat(fee);
 
@@ -119,7 +119,7 @@ function Form({ address, balance, privateKey, withdraw }) {
     setLoading(true);
     await createAndSendRawTransaction(
       String(addressTo),
-      Number(parseFloat(amount)),
+      parseFloat(amount),
       String(pvk)
     )
       .then((data) => setTxId(data?.txid), setTxidTrue(true))
@@ -240,13 +240,6 @@ function Form({ address, balance, privateKey, withdraw }) {
         </TouchableHighlight>
       </View>
       {txid ? <ShowInsight txid={txid} a={true} /> : null}
-      {txidTrue ? (
-        <View>
-          <Text>{txid} certo porem sem txid</Text>
-        </View>
-      ) : (
-        <Text>Erro na bagaça</Text>
-      )}
     </View>
   );
 }
