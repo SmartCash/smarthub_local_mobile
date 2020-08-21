@@ -3,7 +3,7 @@
     "name": "Wallet Mobile",
     "slug": "SmartCashMobile",
     "privacy": "public",
-    "sdkVersion": "36.0.0",
+    "sdkVersion": "38.0.0",
     "platforms": [
       "android"
     ],
